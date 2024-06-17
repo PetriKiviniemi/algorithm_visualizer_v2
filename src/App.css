@@ -1,38 +1,274 @@
-.App {
+/* Styles for the grid container */
+.grid-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: '100%'; /* Full viewport height */
+}
+
+.grid-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.grid-column-neutral {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  background-color: #ffffff;
+  margin: 1px;
+  font-size: 10px;
+  transition: background-color 0.2s ease-in;
+}
+
+.grid-column-neutral:hover {
+  background-color: #d9d9d9;
+  cursor: pointer;
+}
+
+.grid-column-start {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  margin: 1px;
+  font-size: 10px;
+}
+
+.grid-column-start:hover {
+  cursor: pointer;
+}
+
+.grid-column-end {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  margin: 1px;
+  font-size: 10px;
+}
+
+.grid-column-end:hover {
+  cursor: pointer;
+}
+
+.grid-column-wall {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  background-color: black; 
+  margin: 1px;
+  font-size: 10px;
+  transition: background-color 0.2s ease-in;
+}
+
+.grid-column-wall:hover {
+  cursor: pointer;
+}
+
+
+.navbar {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  min-height: 60px;
+  background-color: #2D2F46;
+  align-items: center;
+  justify-content: center;
+  padding-left: 20px;
+}
+
+@media (max-width: 800px) {
+  .navbar {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.infosection {
+  display: flex;
+  width: 100%;
+  height: 70px;
+  margin-bottom: 20px;
+  align-items: center;
+  justify-content: center;
+}
+
+.infosection-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-right: 2vw;
+  margin-left: 2vw;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.wall-node {
+  background-color: black;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+.path-node {
+  background-color: greenyellow;
+}
+
+.visited-node-info-section {
+  animation: backgroundColorChange 3s infinite alternate;
+  transition: background-color 1s ease;
+}
+
+@keyframes backgroundColorChange {
+  0% {
+    background-color: #30d5c7; /* Light Blue */
+  
+  }
+  100% {
+    background-color: #5f00b8; /* Dark Purple */
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.dropdown-container {
+  position: relative;
+  display: flex;
+  height: 100%;
+  margin-left: 3vw;
+  align-items: center;
+  justify-content: center;
+  padding-left: 5px;
+  padding-right: 5px;
+  transition: background-color 0.5s ease-in-out;
+}
+
+.dropdown-container:hover {
+  background-color: #5f00b8;
+  border-radius: 2px;
+}
+
+.dropdown-button {
+  font-size: 1rem;
+  color: white;
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-radius: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.dropdown-content {
+  position: absolute;
+  top: 100%; /* Position it below the button */
+  left: 0;
+  background-color: #2D2F46;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  margin-right: 10px;
+  margin-top: 10px;
+  min-width: 160px;
+  z-index: 1000;
+  padding: 10px;
+}
+
+.dropdown-item {
+  width: 90%;
+  color: white;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  padding-left: 4px;
+  padding-right: 8px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  transition: background-color 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #5f00b8;
+}
+
+.custom-button {
+  display: flex;
+  height: 2.5rem;
+  width: 8rem;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  margin-left: 3vw;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  background-color: #5f00b8;
+}
+
+.custom-button:active {
+  background-color: #4a0090;
+  transition: background-color 0.1s ease-in-out;
+}
+
+.custom-text-button {
+  display: flex;
+  height: 2.5rem;
+  width: 8rem;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  margin-left: 3vw;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+}
+
+.custom-text-button:hover {
+  color: #a13dff;
+  transition: color 0.3s ease-in-out;
+}
+
+.custom-text-button:active {
+  color: #5f00b8;
+  transition: color 0.1s ease-in-out;
+}
+
+.slider-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  width: 10rem;
+}
+
+.slider {
+  width: 80%;
+  margin-top: 5px;
+  background-color: #5f00b8;
+  -webkit-appearance: none; /* Remove default appearance for WebKit browsers */
+  appearance: none; /* Remove default appearance for other browsers */
+  border-radius: 10px;
+}
+
+.slider-value {
+  font-size: 0.9rem;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Remove default appearance for WebKit browsers */
+  appearance: none; /* Remove default appearance for other browsers */
+  width: 20px; /* Width of the thumb */
+  height: 20px; /* Height of the thumb */
+  background: white; /* Thumb color */
+  cursor: pointer; /* Cursor style on hover */
+  border-radius: 20px; /* Rounded corners for the thumb */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* Optional shadow for the thumb */
 }
