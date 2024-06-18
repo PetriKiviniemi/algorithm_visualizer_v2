@@ -10,7 +10,24 @@ export const GridNodeModes = {
   NEUTRAL: 'NEUTRAL',
   START: 'START',
   END: 'END',
+  WEIGHTED: 'WEIGHTED',
+  PATH: 'PATH',
 }
+
+// For making integer to an rgb value
+const normalize = (value, min, max) => (value - min) / (max - min);
+
+const interpolateColor = (weight, minWeight, maxWeight) => {
+    const startColor = (48, 213, 199) // [48, 213, 199]
+    const endColor = (95, 0, 184);   // [95, 0, 184]
+    const normalizedWeight = normalize(weight, minWeight, maxWeight);
+
+    const r = Math.round(startColor[0] + normalizedWeight * (endColor[0] - startColor[0]));
+    const g = Math.round(startColor[1] + normalizedWeight * (endColor[1] - startColor[1]));
+    const b = Math.round(startColor[2] + normalizedWeight * (endColor[2] - startColor[2]));
+
+    return `rgb(${r}, ${g}, ${b})`;
+};
 
 export const GridNode = ({nodeObj, onDragStart, onMouseEnter, onDragEnd, onClick}) => {
   const [className, setClassName] = useState("grid-column")
@@ -32,6 +49,12 @@ export const GridNode = ({nodeObj, onDragStart, onMouseEnter, onDragEnd, onClick
     onClick(e, nodeObj)
   }
 
+  // Dynamic styling in addition to CSS from file
+  const style = {
+    width: `${100 / (GRID_COLS + 8)}vw`,
+    height: `${100 / (GRID_ROWS + 8)}vh`,
+  };
+
   useEffect(() => {
     if(nodeObj.mode == GridNodeModes.START)
       setClassName("grid-column-start")
@@ -41,12 +64,20 @@ export const GridNode = ({nodeObj, onDragStart, onMouseEnter, onDragEnd, onClick
       setClassName("grid-column-neutral")
     else if(nodeObj.mode == GridNodeModes.WALL)
       setClassName("grid-column-wall")
+    else if(nodeObj.mode == GridNodeModes.WEIGHTED)
+    {
+      setClassName("grid-column-weighted")
+    }
   }, [nodeObj.mode])
+
+  // TODO:: Fix
+  if(className == 'grid-column-weighted')
+      style.backgroundColor = interpolateColor(nodeObj.weight, 0, GRID_ROWS * GRID_COLS)
 
   return(
     <div 
       className={className}
-      style={{"width": `${100/(GRID_COLS+8)}vw`, "height": `${100/(GRID_ROWS+8)}vh`}}
+      style={style}
       draggable 
       onDragStart={handleDragStart}
       onMouseUp={handleDragEnd}
