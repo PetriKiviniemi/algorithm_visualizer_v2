@@ -1,7 +1,7 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useRef } from 'react';
 import { GRID_COLS, GRID_ROWS, GridNode,
          GridNodeModes, DropdownMenu, CustomButton,
-         CustomSlider, CustomTextButton } from './Widgets';
+         CustomSlider, CustomTextButton, sleep } from './Widgets';
 import './App.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { Djikstra } from './Algorithms';
@@ -9,35 +9,88 @@ import { Djikstra } from './Algorithms';
 function App() {
   const [grid, setGrid] = useState([])
   const [selectedAlgo, setSelectedAlgo] = useState("Djikstra")
-  const [vizSpeed, changeVizSpeed] = useState(100)
   const [currentlyDragging, setCurrentlyDragging] = useState(undefined)
   const [curStart, setCurStart] = useState(undefined)
   const [curEnd, setCurEnd] = useState(undefined)
-  const [isVisualizing, setIsVisualizing] = useState(false)
 
-  const handleVisualize = (e) => {
-    setIsVisualizing(true)
-  }
+  // We have to use refs since we are using these values
+  // inside the algorithms and they change from the parent component
+  const [isVisualizing, setIsVisualizing] = useState(false)
+  const isVisualizingRef = useRef(isVisualizing)
+
+  const [vizSpeed, changeVizSpeed] = useState(100)
+  const vizSpeedRef = useRef(vizSpeed)
+
+  const [hasPathNodes, setHasPathNodes] = useState(false)
+
+  const handleVisualize = async (e) => {
+    if (isVisualizingRef.current) {
+      setIsVisualizing(false);
+      await new Promise(resolve => setTimeout(resolve, 100)); 
+    }
+
+    if (hasPathNodes) {
+      initGridDefaultState();
+      setHasPathNodes(false);
+      // Small sleep for state waiting for state update
+      // This is annoying way to do this, but other way would be to use
+      // Another ref as abort signal
+      await new Promise(resolve => setTimeout(resolve, 100)); 
+    }
+
+    setIsVisualizing(true);
+  };
 
   useEffect(() => {
-    if(isVisualizing)
-    {
-      if (selectedAlgo === "Djikstra")
+    isVisualizingRef.current = isVisualizing;
+    const visualize = async () => {
+      if (isVisualizing && selectedAlgo === "Djikstra")
       {
-        Djikstra(grid, curStart, curEnd, visualization_callback)
+        setHasPathNodes(true);
+        await Djikstra(grid, curStart, curEnd, visualization_callback_batch, isVisualizingRef, vizSpeedRef).then(
+          (shortest_path) => {
+            if(!shortest_path)
+              return;
+            // Visualize the shortest path
+            let node_modes = new Array(shortest_path.length).fill(GridNodeModes.PATH);
+            for(const [i, node] of shortest_path.entries())
+            {
+              if (node == curStart)
+                node_modes[i] = GridNodeModes.PATH_START
+              else if (node == curEnd)
+                node_modes[i] = GridNodeModes.PATH_END
+            }
+            updateGridByIdx(shortest_path, node_modes);
+          }
+        )
       }
+      setIsVisualizing(false)
     }
-    setIsVisualizing(false)
-  }, [isVisualizing])
 
-  const visualization_callback = (node_idx, node_dist) => {
-    updateGridByIdx(node_idx, GridNodeModes.WEIGHTED, node_dist)
+    visualize();
+  }, [isVisualizing]);
+
+  useEffect(() => {
+    vizSpeedRef.current = vizSpeed
+  }, [vizSpeed])
+
+  const visualization_callback_batch = async (node_indices, node_distances) => 
+  {
+    let node_modes = [];
+
+    for(let i = 0; i < node_indices.length; i++)
+      node_modes.push(GridNodeModes.WEIGHTED)
+
+    updateGridByIdx(node_indices, node_modes, node_distances)
   }
 
   const handleDragStart = (e, obj) => {
     // Prevent asynchronous bugs where the dragging is resetted
     if(!currentlyDragging)
       setCurrentlyDragging(obj)
+    
+    if(isVisualizing || hasPathNodes)
+      initGridDefaultState();
   };
 
   const handleDragEnd = (e, obj) => {
@@ -45,6 +98,10 @@ function App() {
   }
 
   const handleClick = (e, obj) => {
+
+    if(isVisualizing || hasPathNodes)
+      initGridDefaultState();
+
     if(obj.mode === GridNodeModes.START || obj.mode === GridNodeModes.END)
       return
 
@@ -66,7 +123,7 @@ function App() {
 
         // Take the previous start value and pass it to the updateGridByIdx func
         setCurStart(prevCurStart => {
-          updateGridByIdx(obj.idx, GridNodeModes.START, prevCurStart);
+          updateGridByIdx(obj.idx, GridNodeModes.START, undefined, prevCurStart);
           return obj.idx;
         });
       }
@@ -77,7 +134,7 @@ function App() {
           return
 
         setCurEnd(prevCurEnd => {
-          updateGridByIdx(obj.idx, GridNodeModes.END, prevCurEnd);
+          updateGridByIdx(obj.idx, GridNodeModes.END, undefined, prevCurEnd);
           return obj.idx;
         });
       }
@@ -98,42 +155,62 @@ function App() {
     }
   }
 
-  const updateGridByIdx = useCallback((idx, newMode, weight = undefined, prevStartOrEnd = undefined) => {
-    const row_idx = Math.floor(idx / GRID_COLS);
-    const col_idx = idx % GRID_COLS;
+  // NOTE:: The weights are the distances array, and it is expected to be length GRID_ROWS * GRID_COLS
+  // It wastes more space but its more speed efficient
+  const updateGridByIdx = useCallback((indices, modes, weights = undefined, prevStartOrEnd = undefined) => {
+
+    if (!Array.isArray(indices) && !Array.isArray(modes))
+    {
+      indices = [indices]
+      modes = [modes]
+      if(weights && !Array.isArray(weights))
+        weights = [weights]
+    }
 
     // Take a shallow copy of the grid, and change the node's mode and it's reference
     // To inform react of the state array's change
     setGrid(prevGrid => {
       // Create a shallow copy of the grid
       const newGrid = prevGrid.map(row => [...row]);
-      const curWeight = newGrid[row_idx][col_idx].weight
+      for(const [i, node_idx] of indices.entries())
+      {
+        const row_idx = Math.floor(node_idx / GRID_COLS);
+        const col_idx = node_idx % GRID_COLS;
 
-      if (newMode === GridNodeModes.START || newMode === GridNodeModes.END) {
-        if (prevStartOrEnd) {
-          const prevRowIdx = Math.floor(prevStartOrEnd/ GRID_COLS);
-          const prevColIdx = prevStartOrEnd % GRID_COLS;
+        const curWeight = newGrid[row_idx][col_idx].weight
 
-          newGrid[prevRowIdx][prevColIdx] = {
-            ...newGrid[prevRowIdx][prevColIdx],
-            mode: GridNodeModes.NEUTRAL,
-            weight: weight ? weight : curWeight 
-          };
+        const newMode = modes[i]
+
+
+        if (newMode === GridNodeModes.START || newMode === GridNodeModes.END) {
+          if (prevStartOrEnd) {
+            const prevRowIdx = Math.floor(prevStartOrEnd/ GRID_COLS);
+            const prevColIdx = prevStartOrEnd % GRID_COLS;
+
+            newGrid[prevRowIdx][prevColIdx] = {
+              ...newGrid[prevRowIdx][prevColIdx],
+              mode: GridNodeModes.NEUTRAL,
+              weight: weights ? weights[prevStartOrEnd] : curWeight 
+            };
+          }
         }
-      }
 
-    newGrid[row_idx][col_idx] = {
-      ...newGrid[row_idx][col_idx],
-      mode: newMode,
-      weight: weight ? weight : curWeight 
-    };
+      newGrid[row_idx][col_idx] = {
+        ...newGrid[row_idx][col_idx],
+        mode: newMode,
+        weight: weights ? weights[node_idx] : curWeight 
+      };
+    }
 
     return newGrid;
   });
 
   }, []);
 
+
   const initGridDefaultState = () => {
+    setIsVisualizing(false);
+    setHasPathNodes(false);
     // Make a 2d grid of JS objects
     let tempGrid = []
     for(let i = 0; i < GRID_ROWS; i++)
@@ -142,11 +219,21 @@ function App() {
       for(let j = 0; j < GRID_COLS; j++)
       {
         let mode = GridNodeModes.NEUTRAL
+
+        // TODO:: Figure this out
+//        const curIdx = i * GRID_COLS + j;
+//
+//        if(curStart == curIdx)
+//        {
+//          mode = GridNodeModes.START;
+//        }
+
         if(i === GRID_ROWS/2 && j === 10)
         {
           mode = GridNodeModes.START
           setCurStart(i * GRID_COLS + j)
         }
+
         else if(i === GRID_ROWS/2 && j === 40)
         {
           mode = GridNodeModes.END
@@ -180,7 +267,7 @@ function App() {
         <CustomTextButton title={"Reset board"} callback={() => initGridDefaultState()}/>
         <CustomTextButton title={"Clear walls"} callback={() => console.log("Board cleared")}/>
         <CustomTextButton title={"Clear path"} callback={() => console.log("Board cleared")}/>
-        <CustomSlider title={"Speed"} range={[0, 100]} callback={changeVizSpeed}/>
+        <CustomSlider title={"Speed"} range={[1, 100]} callback={changeVizSpeed}/>
       </div>
       <div className="infosection">
 

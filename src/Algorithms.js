@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { GRID_COLS, GRID_ROWS } from "./Widgets";
+import { GridNode, GridNodeModes, GRID_COLS, GRID_ROWS, sleep } from "./Widgets";
 
 class QElement {
     constructor(idx, priority)
@@ -65,12 +65,12 @@ class PriorityQueue {
 // This implementation takes 2d array for js objects that have following properties:
 // idx
 // mode (GridNodeModes enum value)
-export const Djikstra = (grid, start_idx, end_idx, viz_callback) => {
+export const Djikstra = async (grid, start_idx, end_idx, viz_callback, isVisualizingRef, viz_speed) => {
 
     if(!grid || !start_idx || !end_idx)
         return undefined
     
-    console.log("Calculating djikstra")
+    console.log("Calculating djikstra: ", viz_speed.current)
 
     let distances = []
     for (let i = 0; i < grid.length * grid[0].length; i++)
@@ -84,9 +84,14 @@ export const Djikstra = (grid, start_idx, end_idx, viz_callback) => {
     let priority_queue = new PriorityQueue();
     priority_queue.enqueue(start_idx, 0)
 
+    let batched_nodes = []
     // Put all the nodes in the queue
     while(!priority_queue.isEmpty())
     {
+
+        if(!isVisualizingRef.current)
+            return;
+
         let min_elem = priority_queue.dequeue();
 
         // If we found the end
@@ -114,15 +119,26 @@ export const Djikstra = (grid, start_idx, end_idx, viz_callback) => {
             // Lets use distance between grid nodes value 1
             if(distances[neighbour.idx] > distances[min_elem.idx] + 1)
             {
+                if(neighbour.mode == GridNodeModes.WALL)
+                    continue;
                 distances[neighbour.idx] = distances[min_elem.idx] + 1
                 priority_queue.enqueue(neighbour.idx, distances[neighbour.idx])
                 
                 // Keep track of the shortest path to the previous element
                 // So we don't have to calculate it again for the shortest path between point a and b
                 previous[neighbour.idx] = min_elem.idx
+                batched_nodes.push(neighbour.idx)
 
-                viz_callback(neighbour.idx, distances[neighbour.idx])
+                // For singular nodes
+                //viz_callback(neighbour.idx, distances[neighbour.idx])
             }
+        }
+
+        if(batched_nodes.length % 10 == 0)
+        {
+            viz_callback(batched_nodes, distances)
+            await sleep(100 - viz_speed.current)
+            batched_nodes = []
         }
     }
 
@@ -137,7 +153,6 @@ export const Djikstra = (grid, start_idx, end_idx, viz_callback) => {
     }
 
     shortest_path.reverse();
-    console.log(shortest_path)
 
     return shortest_path;
 }
