@@ -86,7 +86,6 @@ export const GridNode = ({
   }, [nodeObj.mode]);
 
   useEffect(() => {
-    console.log(className)
     if (className == "grid-column-weighted") {
       setInnerStyle((prevStyle) => ({
         ...prevStyle,
@@ -147,12 +146,11 @@ export const DropdownMenu = ({ title, items, selectItemCallback }) => {
   const dropdownRef = useRef(null);
 
   const handleOpen = () => {
-    console.log(isOpen);
     setIsOpen(!isOpen);
   };
 
   const selectItem = (item) => {
-    selectItemCallback(item);
+    selectItemCallback(item.target.textContent);
     setIsOpen(false);
   };
 

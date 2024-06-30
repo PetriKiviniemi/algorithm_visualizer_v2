@@ -22,7 +22,7 @@
   background-color: #ffffff;
   margin: 1px;
   font-size: 10px;
-  transition: background-color 0.2s ease-in;
+  transition: background-color 0.1s ease-in;
 }
 
 .grid-column-neutral:hover {
@@ -38,9 +38,6 @@
   border: 1px solid #ccc;
   margin: 1px;
   font-size: 10px;
-}
-
-.grid-column-start:hover {
   cursor: pointer;
 }
 
@@ -52,9 +49,6 @@
   border: 1px solid #ccc;
   margin: 1px;
   font-size: 10px;
-}
-
-.grid-column-end:hover {
   cursor: pointer;
 }
 
@@ -68,9 +62,6 @@
   margin: 1px;
   font-size: 10px;
   transition: background-color 0.2s ease-in;
-}
-
-.grid-column-wall:hover {
   cursor: pointer;
 }
 
@@ -83,6 +74,13 @@
   border: 1px solid #ccc;
   margin: 1px;
   font-size: 10px;
+  cursor: pointer;
+  /* Since the background color is dynamic, create hover effect with brightness */
+  transition: filter 0.1s ease-in;
+}
+
+.grid-column-weighted:hover {
+  filter: brightness(0.8);
 }
 
 .grid-column-weighted-inner {
@@ -103,6 +101,13 @@
   border: 1px solid #ccc;
   margin: 1px;
   font-size: 10px;
+  cursor: pointer;
+  /* Since the background color is dynamic, create hover effect with brightness */
+  transition: filter 0.1s ease-in;
+}
+
+.grid-column-path:hover {
+  filter: brightness(0.8);
 }
 
 .grid-column-path-inner {
@@ -112,7 +117,7 @@
   width: 0;
   height: 0;
   display: flex;
-  background-color: yellow;
+  background-color: greenyellow;
   justify-content: center;
   align-items: center;
   animation: fillAnimation 1s ease forwards; /* Animation to fill the box */
@@ -127,6 +132,13 @@
   border: 1px solid #ccc;
   margin: 1px;
   font-size: 10px;
+  cursor: pointer;
+  /* Since the background color is dynamic, create hover effect with brightness */
+  transition: filter 0.1s ease-in;
+}
+
+.grid-column-path-start:hover {
+  filter: brightness(0.8);
 }
 
 .grid-column-path-end {
@@ -138,6 +150,13 @@
   border: 1px solid #ccc;
   margin: 1px;
   font-size: 10px;
+  cursor: pointer;
+  /* Since the background color is dynamic, create hover effect with brightness */
+  transition: filter 0.1s ease-in;
+}
+
+.grid-column-path-end:hover {
+  filter: brightness(0.8);
 }
 
 @keyframes fillAnimation {
@@ -286,7 +305,7 @@
   display: flex;
   height: 2.5rem;
   width: 8rem;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   border-radius: 5px;
   margin-left: 3vw;
   text-align: center;
