@@ -11,7 +11,7 @@ import {
 } from "./Widgets";
 import "./App.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { Djikstra, AStar, DFS, PrimsAlgorithm, BellmanFord } from "./Algorithms";
+import { Djikstra, AStar, DFS, PrimsAlgorithm, BellmanFord, RecursiveDivision } from "./Algorithms";
 
 function App() {
   const [grid, setGrid] = useState([]);
@@ -94,6 +94,14 @@ function App() {
             visualization_callback_batch, isVisualizingRef, vizSpeedRef
           );
         }
+        else if(selectedAlgo === "Recursive Division")
+        {
+          // Wall generation algo
+          await RecursiveDivision(
+            grid, curStart, curEnd,
+            visualization_callback_batch, isVisualizingRef, vizSpeedRef
+          );
+        }
         //TODO:: Implement negative weights (POWER-UPS)
         else if(selectedAlgo === "Bellman-Ford")
         {
@@ -117,11 +125,13 @@ function App() {
     vizSpeedRef.current = vizSpeed;
   }, [vizSpeed]);
 
-  const visualization_callback_batch = async (node_indices, node_distances) => {
+  // Assuming same node more for all, for now.
+  // For some use cases could just pass the updateGridByIdx, but for homogenous reasons allow this function for multiple params
+  const visualization_callback_batch = async (node_indices, node_distances, node_mode = GridNodeModes.WEIGHTED) => {
     let node_modes = [];
 
     for (let i = 0; i < node_indices.length; i++)
-      node_modes.push(GridNodeModes.WEIGHTED);
+      node_modes.push(node_mode);
 
     updateGridByIdx(node_indices, node_modes, node_distances);
   };
@@ -235,7 +245,6 @@ function App() {
           const col_idx = node_idx % GRID_COLS;
 
           const curWeight = newGrid[row_idx][col_idx].weight;
-
           const newMode = modes[i];
 
           if (
@@ -318,7 +327,7 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
+    <div className="App" onMouseEnter={handleDragEnd}>
       <div className="navbar">
         <div style={{ fontSize: "24px", color: "white" }}>
           Pathfinding visualizer
@@ -334,7 +343,7 @@ function App() {
         />
         <DropdownMenu
           title={"Patterns & Mazes"}
-          items={["Prim's Algorithm", "Stair pattern", "Recursive division"]}
+          items={["Prim's Algorithm", "Stair pattern", "Recursive Division"]}
           selectItemCallback={setSelectedAlgo}
         />
         <CustomButton

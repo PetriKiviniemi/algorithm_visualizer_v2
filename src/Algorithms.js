@@ -350,30 +350,193 @@ export const DFS = async (grid, start_idx, end_idx, viz_callback, isVisualizingR
 
 export const PrimsAlgorithm = async (grid, start_idx, end_idx, viz_callback, isVisualizingRef, viz_speed) => 
 {
-    pq = new PriorityQueue();
-    const visited = new Set(); 
-    const wall_nodes = Array(grid.length * grid[0].length).fill(Infinity);
-    
-    let random_start = start_idx
-    while(random_start == start_idx || random_start == end_idx)
-        random_start = Math.floor(Math.random() * grid.length * grid[0].length)
-    
-    const rs_row = Math.floor(random_start / GRID_COLS);
-    const rs_col = random_start % GRID_COLS;
 
-    visited[rs_row][rs_col] = true;
-    removeWalls(random_start, visited, pq);
-}
+    const pq = new PriorityQueue();
+    const path_array = Array(grid.length * grid[0].length).fill(false);
+    let path_array_viz = [];
+    
+    // Add the path start
+    path_array[start_idx] = true;
+    path_array[end_idx] = true;
 
-const removeWalls = (idx, visited, pq) => {
-    const neighbours = get_neighbours(idx)
-    for(const neighbour of neighbours)
+    //First we turn the whole grid into walls except the start and end nodes
+    //For the 
+    const flat_grid = Array(grid.length * grid[0].length).fill(0);
+    for(const grid_node of grid.flat())
     {
-        if(!visited.has(neighbour.idx))
+        if(grid_node.idx != start_idx && grid_node.idx != end_idx)
+            flat_grid[grid_node.idx] = grid_node.idx
+    }
+
+    viz_callback(flat_grid, Array(grid.length * grid[0].length).fill(0), GridNodeModes.WALL);
+    // Add the neighbouring nodes as potential walls
+    addWalls(start_idx, grid, pq)
+
+    while(!pq.isEmpty())
+    {
+        if(!isVisualizingRef.current)
+            break;
+        
+        const wall = pq.dequeue();
+
+        const wall_row_idx = Math.floor(wall.idx / GRID_COLS);
+        const wall_col_idx = wall.idx % GRID_COLS;
+
+        const neighbours = get_neighbours(wall_row_idx, wall_col_idx, grid);
+        //Filter path neighbours
+        const path_neighbours = neighbours.filter(neighbour => path_array[neighbour.idx]);
+        
+        if(path_neighbours.length === 1)
         {
-            pq.enqueue(neighbour.idx, Math.random());
+            path_array[wall.idx] = true;
+            path_array_viz.push(wall.idx)
+            for(const neighbour of neighbours)
+            {
+                if(!path_array[neighbour.idx])
+                    pq.enqueue(neighbour.idx, Math.random());
+            }
         }
     }
+
+    // Clear the end index neighbours
+    const end_row_idx = Math.floor(end_idx / GRID_COLS);
+    const end_col_idx = end_idx % GRID_COLS;
+    for(const neighbour of get_neighbours(end_row_idx, end_col_idx, grid))
+    {
+        path_array[neighbour.idx] = true;
+        path_array_viz.push(neighbour.idx)
+        break;
+    }
+
+    for(const path_node of path_array_viz)
+    {
+        if(path_node != start_idx && path_node != end_idx)
+        {
+            if(!isVisualizingRef.current)
+                break;
+            viz_callback([path_node], [0], GridNodeModes.NEUTRAL)
+            await sleep(100 - viz_speed.current)
+        }
+    }
+
+    return path_array;
+}
+
+const addWalls = (flat_idx, grid, pq) => {
+    const row = Math.floor(flat_idx / GRID_COLS);
+    const col = flat_idx % GRID_COLS;
+    for(const neighbour of get_neighbours(row, col, grid))
+    {
+        pq.enqueue(neighbour.idx, Math.random());
+    }
+}
+
+export const RecursiveDivision = async (grid, start_idx, end_idx, viz_callback, isVisualizingRef, viz_speed) => 
+{
+
+    const choose_orientation = (width, height) =>
+    {
+        if(width < height)
+            return "HORIZONTAL"
+        else
+            return "VERTICAL"
+    }
+
+    const divide = async (start_idx, end_idx, row1, col1, row2, col2, maze_nodes, isVisualizingRef) => {
+        // Get start and end 2d indices to not divided on them
+        const start_row = Math.floor(start_idx / GRID_COLS);
+        const start_col = start_idx % GRID_COLS;
+
+        const end_row = Math.floor(end_idx / GRID_COLS);
+        const end_col = end_idx % GRID_COLS;
+
+        let width = Math.abs(col2 - col1)
+        let height = Math.abs(row2 - row1)
+        let ori = choose_orientation(width, height);
+
+        console.log(row1, col1, width, height)
+
+        // If the section is too small to be divided
+        if(width < 4 || height < 4)
+            return;
+
+        // Define the current area
+        // We pick random row for horizontal wall, otherwise 
+        // We pick random col for vertical wall
+        let wall_row = ori == "HORIZONTAL" ? getRandomInt(row1, width - 2) : undefined
+        let wall_col = ori == "VERTICAL" ? getRandomInt(col2, height - 2) : undefined
+
+        console.log(ori, "; RANDOM_WALL:", wall_row, wall_col)
+
+        // Draw horizontal split
+        if(ori == "HORIZONTAL")
+        {
+            for(let split_col = col1; split_col < col2; split_col++)
+            {
+                maze_nodes.push({idx: wall_row * GRID_COLS + split_col})
+            }
+        }
+        else
+        {
+            for(let split_row = row1; split_row < row2; split_row++)
+            {
+                maze_nodes.push({idx: split_row * GRID_COLS + wall_col})
+            }
+        }
+
+        for(const node of maze_nodes)
+        {
+            if(!isVisualizingRef.current)
+                return;
+
+            viz_callback([node.idx], 0, GridNodeModes.WALL)
+        }
+
+        // Determine subfields
+        // UPPER/LEFT -> HORIZONTAL/VERTICAL
+        let new_row1 = row1;
+        let new_col1 = col1;
+        let new_row2 = ori == "HORIZONTAL" ? wall_row  : row2;
+        let new_col2 = ori == "HORIZONTAL" ? col2 : wall_col ;
+        console.log("OLD: ", row1, col1, row2, col2)
+        console.log("NEW: ", new_row1, new_col1, new_row2, new_col2)
+        await divide(start_idx, end_idx, new_row1, new_col1, new_row2, new_col2, maze_nodes, isVisualizingRef)
+
+        //LOWER/RIGHT -> HORIZONTAL/VERTICAL
+        new_row1 = ori == "HORIZONTAL" ? wall_row + 1 : row1;
+        new_col1 = ori == "HORIZONTAL" ? col1 : wall_col + 1;
+        new_row2 = row2;
+        new_col2 = col2;
+        //await divide(start_idx, end_idx, new_row1, new_col1, new_row2, new_col2, maze_nodes, isVisualizingRef)
+
+
+
+        // Upper side or the left side
+    }
+
+    const maze_nodes = [];
+
+    const orientation = choose_orientation(Math.abs(GRID_COLS - 0), Math.abs(GRID_ROWS - 0))
+    await divide(
+        start_idx, end_idx,
+        0, 0, GRID_ROWS, GRID_COLS,
+        maze_nodes, isVisualizingRef
+    )
+
+    //for(const obj of maze_nodes)
+    //{
+    //    if(obj.mode === "WALL")
+    //        viz_callback([obj.idx], 0, GridNodeModes.WALL)
+    //    else if(obj.mode === "NEUTRAL")
+    //        viz_callback([obj.idx], 0, GridNodeModes.NEUTRAL)
+    //}
+}
+
+const getRandomInt = (min, max) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    console.log("MINMAX:", min, max)
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 //TODO:: Implement with negative weights
