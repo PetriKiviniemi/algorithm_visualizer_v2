@@ -30,18 +30,27 @@ function App() {
 
   const [hasPathNodes, setHasPathNodes] = useState(false);
 
+  const mazeAlgos = ["Recursive Division", "Prim's Algorithm"]
+
   const handleVisualize = async (e) => {
     if (isVisualizingRef.current) {
       setIsVisualizing(false);
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
+    // If we have visualized path or we have visualized a maze
     if (hasPathNodes) {
       initGridDefaultState();
       setHasPathNodes(false);
       // Small sleep for state waiting for state update
       // This is annoying way to do this, but other way would be to use
       // Another ref as abort signal
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
+    if(mazeAlgos.some((algo) => algo === selectedAlgo))
+    {
+      initGridDefaultState(false, true);
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
@@ -276,7 +285,7 @@ function App() {
     []
   );
 
-  const initGridDefaultState = (reset = false) => {
+  const initGridDefaultState = (reset = false, clear_walls = false) => {
     setIsVisualizing(false);
     setHasPathNodes(false);
     // Make a 2d grid of JS objects
@@ -296,7 +305,8 @@ function App() {
           } else if (
             i < grid.length &&
             j < grid[i].length &&
-            grid[i][j].mode == GridNodeModes.WALL
+            grid[i][j].mode == GridNodeModes.WALL &&
+            !clear_walls
           ) {
             mode = GridNodeModes.WALL;
           }
@@ -343,7 +353,7 @@ function App() {
         />
         <DropdownMenu
           title={"Patterns & Mazes"}
-          items={["Prim's Algorithm", "Stair pattern", "Recursive Division"]}
+          items={mazeAlgos}
           selectItemCallback={setSelectedAlgo}
         />
         <CustomButton
@@ -356,7 +366,7 @@ function App() {
         />
         <CustomTextButton
           title={"Clear walls"}
-          callback={() => console.log("Board cleared")}
+          callback={() => initGridDefaultState(false, true)}
         />
         <CustomSlider
           title={"Speed"}

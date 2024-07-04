@@ -433,109 +433,85 @@ const addWalls = (flat_idx, grid, pq) => {
 
 export const RecursiveDivision = async (grid, start_idx, end_idx, viz_callback, isVisualizingRef, viz_speed) => 
 {
+    const recursiveDivisionLocal = async (row1, col1, row2, col2, isVisualizingRef) => {
+        if (col2 - col1 < 2 || row2 - row1 < 2) return;
 
-    const choose_orientation = (width, height) =>
-    {
-        if(width < height)
-            return "HORIZONTAL"
-        else
-            return "VERTICAL"
+        if (col2 - col1 > row2 - row1) {
+            await verDivide(row1, col1, row2, col2, isVisualizingRef);
+        } else {
+            await horDivide(row1, col1, row2, col2, isVisualizingRef);
+        }
+    };
+
+    const verDivide = async (row1, col1, row2, col2, isVisualizingRef) => {
+        let wall_col = getRandomInt(col1, col2 - 1);
+        let psg_row = getRandomInt(row1, row2); 
+
+        while(wall_col % 2 != 0)
+            wall_col = getRandomInt(col1, col2 - 1)
+        while(psg_row % 2 == 0)
+            psg_row = getRandomInt(row1, row2); 
+
+        for(let split_row = row1; split_row < row2; split_row++)
+        {
+            if(split_row == psg_row)
+                continue;
+            const flat_idx = split_row * GRID_COLS + wall_col
+            if(flat_idx == start_idx || flat_idx == end_idx)
+                continue;
+
+            maze_nodes.push({idx: flat_idx, mode: "wall"})
+        }
+
+        await recursiveDivisionLocal(row1, col1, row2, wall_col, isVisualizingRef);
+        await recursiveDivisionLocal(row1, wall_col + 1, row2, col2, isVisualizingRef);
     }
 
-    const divide = async (start_idx, end_idx, row1, col1, row2, col2, maze_nodes, isVisualizingRef) => {
-        // Get start and end 2d indices to not divided on them
-        const start_row = Math.floor(start_idx / GRID_COLS);
-        const start_col = start_idx % GRID_COLS;
+    const horDivide = async (row1, col1, row2, col2, isVisualizingRef) => {
+        let wall_row = getRandomInt(row1, row2 - 1);
+        let psg_col = getRandomInt(col1, col2)
 
-        const end_row = Math.floor(end_idx / GRID_COLS);
-        const end_col = end_idx % GRID_COLS;
+        while(wall_row % 2 != 0)
+            wall_row = getRandomInt(row1, row2 - 1);
+        while(psg_col % 2 == 0)
+            psg_col = getRandomInt(col1, col2);
 
-        let width = Math.abs(col2 - col1)
-        let height = Math.abs(row2 - row1)
-        let ori = choose_orientation(width, height);
-
-        console.log(row1, col1, width, height)
-
-        // If the section is too small to be divided
-        if(width < 4 || height < 4)
-            return;
-
-        // Define the current area
-        // We pick random row for horizontal wall, otherwise 
-        // We pick random col for vertical wall
-        let wall_row = ori == "HORIZONTAL" ? getRandomInt(row1, width - 2) : undefined
-        let wall_col = ori == "VERTICAL" ? getRandomInt(col2, height - 2) : undefined
-
-        console.log(ori, "; RANDOM_WALL:", wall_row, wall_col)
-
-        // Draw horizontal split
-        if(ori == "HORIZONTAL")
+        for(let split_col = col1; split_col < col2; split_col++)
         {
-            for(let split_col = col1; split_col < col2; split_col++)
-            {
-                maze_nodes.push({idx: wall_row * GRID_COLS + split_col})
-            }
-        }
-        else
-        {
-            for(let split_row = row1; split_row < row2; split_row++)
-            {
-                maze_nodes.push({idx: split_row * GRID_COLS + wall_col})
-            }
+            if(split_col == psg_col)
+                continue;
+            const flat_idx = wall_row * GRID_COLS + split_col;
+            if(flat_idx == start_idx || flat_idx == end_idx)
+                continue;
+
+            maze_nodes.push({idx: flat_idx, mode: "wall"})
         }
 
-        for(const node of maze_nodes)
-        {
-            if(!isVisualizingRef.current)
-                return;
-
-            viz_callback([node.idx], 0, GridNodeModes.WALL)
-        }
-
-        // Determine subfields
-        // UPPER/LEFT -> HORIZONTAL/VERTICAL
-        let new_row1 = row1;
-        let new_col1 = col1;
-        let new_row2 = ori == "HORIZONTAL" ? wall_row  : row2;
-        let new_col2 = ori == "HORIZONTAL" ? col2 : wall_col ;
-        console.log("OLD: ", row1, col1, row2, col2)
-        console.log("NEW: ", new_row1, new_col1, new_row2, new_col2)
-        await divide(start_idx, end_idx, new_row1, new_col1, new_row2, new_col2, maze_nodes, isVisualizingRef)
-
-        //LOWER/RIGHT -> HORIZONTAL/VERTICAL
-        new_row1 = ori == "HORIZONTAL" ? wall_row + 1 : row1;
-        new_col1 = ori == "HORIZONTAL" ? col1 : wall_col + 1;
-        new_row2 = row2;
-        new_col2 = col2;
-        //await divide(start_idx, end_idx, new_row1, new_col1, new_row2, new_col2, maze_nodes, isVisualizingRef)
-
-
-
-        // Upper side or the left side
+        await recursiveDivisionLocal(wall_row + 1, col1, row2, col2, isVisualizingRef);
+        await recursiveDivisionLocal(row1, col1, wall_row, col2, isVisualizingRef);
     }
 
     const maze_nodes = [];
-
-    const orientation = choose_orientation(Math.abs(GRID_COLS - 0), Math.abs(GRID_ROWS - 0))
-    await divide(
-        start_idx, end_idx,
+    await recursiveDivisionLocal(
         0, 0, GRID_ROWS, GRID_COLS,
-        maze_nodes, isVisualizingRef
-    )
+        isVisualizingRef
+    );
 
-    //for(const obj of maze_nodes)
-    //{
-    //    if(obj.mode === "WALL")
-    //        viz_callback([obj.idx], 0, GridNodeModes.WALL)
-    //    else if(obj.mode === "NEUTRAL")
-    //        viz_callback([obj.idx], 0, GridNodeModes.NEUTRAL)
-    //}
+    for(const obj of maze_nodes)
+    {
+        if(!isVisualizingRef.current)
+            return;
+        if(obj.mode == "wall")
+            viz_callback([obj.idx], 0, GridNodeModes.WALL)
+        else if (obj.mode == "neutral")
+            viz_callback([obj.idx], 0, GridNodeModes.NEUTRAL)
+        await sleep(100 - viz_speed.current)
+    }
 }
 
 const getRandomInt = (min, max) => {
     min = Math.ceil(min);
     max = Math.floor(max);
-    console.log("MINMAX:", min, max)
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
