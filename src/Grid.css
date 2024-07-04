@@ -1,0 +1,185 @@
+/* Styles for the grid container */
+.grid-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: '100%'; /* Full viewport height */
+}
+
+.grid-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.grid-column-neutral {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  background-color: #ffffff;
+  margin: 1px;
+  font-size: 10px;
+  transition: background-color 0.1s ease-in;
+  border-radius: 3px;
+}
+
+.grid-column-neutral:hover {
+  background-color: #d9d9d9;
+  cursor: pointer;
+}
+
+.grid-column-start {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  margin: 1px;
+  font-size: 10px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.grid-column-end {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  margin: 1px;
+  font-size: 10px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.grid-column-wall {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  background-color: black; 
+  margin: 1px;
+  font-size: 10px;
+  transition: background-color 0.2s ease-in;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.grid-column-weighted {
+  display: flex;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  margin: 1px;
+  font-size: 10px;
+  cursor: pointer;
+  /* Since the background color is dynamic, create hover effect with brightness */
+  transition: filter 0.1s ease-in;
+  border-radius: 3px;
+}
+
+.grid-column-weighted:hover {
+  filter: brightness(0.8);
+}
+
+.grid-column-weighted-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  animation: fillAnimation 1s ease forwards; /* Animation to fill the box */
+}
+
+.grid-column-path {
+  display: flex;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  margin: 1px;
+  font-size: 10px;
+  cursor: pointer;
+  /* Since the background color is dynamic, create hover effect with brightness */
+  transition: filter 0.1s ease-in;
+  border-radius: 3px;
+}
+
+.grid-column-path:hover {
+  filter: brightness(0.8);
+}
+
+.grid-column-path-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  display: flex;
+  background-color: greenyellow;
+  justify-content: center;
+  align-items: center;
+  animation: fillAnimation 1s ease forwards; /* Animation to fill the box */
+}
+
+.grid-column-path-start {
+  display: flex;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  margin: 1px;
+  font-size: 10px;
+  cursor: pointer;
+  /* Since the background color is dynamic, create hover effect with brightness */
+  transition: filter 0.1s ease-in;
+  border-radius: 3px;
+}
+
+.grid-column-path-start:hover {
+  filter: brightness(0.8);
+}
+
+.grid-column-path-end {
+  display: flex;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  margin: 1px;
+  font-size: 10px;
+  cursor: pointer;
+  /* Since the background color is dynamic, create hover effect with brightness */
+  transition: filter 0.1s ease-in;
+  border-radius: 3px;
+}
+
+.grid-column-path-end:hover {
+  filter: brightness(0.8);
+}
+
+@keyframes fillAnimation {
+  0% {
+    width: 0;
+    height: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    transform: none;
+  }
+}

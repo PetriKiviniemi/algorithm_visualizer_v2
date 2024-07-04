@@ -1,0 +1,145 @@
+.dropdown-container {
+  position: relative;
+  display: flex;
+  height: 100%;
+  margin-left: 3vw;
+  align-items: center;
+  justify-content: center;
+  padding-left: 5px;
+  padding-right: 5px;
+  transition: background-color 0.5s ease-in-out;
+}
+
+.dropdown-container:hover {
+  background-color: #5f00b8;
+  border-radius: 2px;
+}
+
+.dropdown-button {
+  font-size: 1rem;
+  color: white;
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-radius: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+
+.dropdown-content {
+  position: absolute;
+  top: 100%; /* Position it below the button */
+  left: 0;
+  background-color: #2D2F46;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  margin-right: 10px;
+  margin-top: 10px;
+  min-width: 160px;
+  z-index: 1000;
+  padding: 10px;
+}
+
+.dropdown-item {
+  width: 90%;
+  color: white;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  padding-left: 4px;
+  padding-right: 8px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  transition: background-color 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #5f00b8;
+}
+
+.custom-button {
+  display: flex;
+  height: 2.5rem;
+  width: 8rem;
+  font-size: 0.8rem;
+  border-radius: 5px;
+  margin-left: 3vw;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  background-color: #5f00b8;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+
+.custom-button:active {
+  background-color: #4a0090;
+  transition: background-color 0.1s ease-in-out;
+}
+
+.custom-text-button {
+  display: flex;
+  height: 2.5rem;
+  width: 8rem;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  margin-left: 3vw;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+
+.custom-text-button:hover {
+  color: #a13dff;
+  transition: color 0.3s ease-in-out;
+}
+
+.custom-text-button:active {
+  color: #5f00b8;
+  transition: color 0.1s ease-in-out;
+}
+
+.slider-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 10rem;
+}
+
+.slider {
+  width: 80%;
+  margin-top: 5px;
+  background-color: #5f00b8;
+  -webkit-appearance: none; /* Remove default appearance for WebKit browsers */
+  appearance: none; /* Remove default appearance for other browsers */
+  border-radius: 10px;
+}
+
+.slider-value {
+  font-size: 0.9rem;
+  color: white;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Remove default appearance for WebKit browsers */
+  appearance: none; /* Remove default appearance for other browsers */
+  width: 20px; /* Width of the thumb */
+  height: 20px; /* Height of the thumb */
+  background: white; /* Thumb color */
+  cursor: pointer; /* Cursor style on hover */
+  border-radius: 20px; /* Rounded corners for the thumb */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* Optional shadow for the thumb */
+}

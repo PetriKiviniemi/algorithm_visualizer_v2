@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import "./App.css";
+import React, { useState, useEffect, useRef } from "react";
+import "./Widgets.css"
+import "./Grid.css"
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 export const GRID_ROWS = 18;
